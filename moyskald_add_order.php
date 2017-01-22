@@ -12,7 +12,6 @@ $rawPosition = $data['position'];
 $rawCounterparty = $data['counterparty'];
 $rawOrganization = $data['organization'];
 
-$positionIdCollection = array_keys($rawPosition);
 $counterpartyIdCollection = array_keys($rawCounterparty);
 $organizationIdCollection = array_keys($rawOrganization);
 
@@ -54,8 +53,8 @@ curl_setopt($curl, CURLOPT_HTTPHEADER, array(
         'Content-Length: ' . strlen($textAddCustomerOrder))
 );
 
-$rawCustomerOrder = setCustomerOrder($curl);
-$customerOrderId = $rawCustomerOrder['id'];
+$customerOrderId = setCustomerOrder($curl);
+// $customerOrderId = $rawCustomerOrder['id'];
 
 $isPositionArray = is_array($rawPosition);
 
@@ -83,11 +82,11 @@ if ($isPositionArray) {
     }
 }
 
-$jsonResponse = '';
+$jsonResponse = 'empty';
 $isContainPosition = count($orderPositions)>0;
 if($isContainPosition ){
     $jsonOrderPositions= json_encode($orderPositions);
-    var_export($jsonOrderPositions);
+
     $curl = setupCurl($apiSettings);
 
     $curl = setCurl(
@@ -105,7 +104,7 @@ if($isContainPosition ){
     );
 
     $jsonResponse = setCustomerOrderPosition($curl);
-    var_export($jsonResponse);
 }
+var_export($jsonResponse);
 
 
