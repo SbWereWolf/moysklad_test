@@ -34,7 +34,7 @@ $curl = setCurl(
     MOYSKLAD_GET_NOMENCLATURE_METHOD);
 $nomenclature = getNomenclature($curl);
 
-echo '<form action="#" onsubmit="return false;" id="orderForm"  name="q0" enctype="multipart/form-data"><p>Доступные юридические лица:<br />';
+echo '<form action="#" onsubmit="return false;" id="orderForm"  ><p>Доступные юридические лица:<br />';
 foreach ($persons as $key => $person) {
     $personId = $person['id'];
     echo '<label for="' . $personId . '">' . $person['name'] . '</label><input type="radio" data-organization-type="1" id="' . $personId . '" name="organization"><br />';
@@ -89,7 +89,6 @@ function sendOrder(){
     });
     
     var postData = JSON.stringify({position : position, counterparty : counterparty , organization : organization});
-    console.log(postData);
     $.ajax({
         type: "POST",
         url: "moyskald_add_order.php",        

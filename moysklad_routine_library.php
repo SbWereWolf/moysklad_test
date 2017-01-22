@@ -82,7 +82,8 @@ function setCustomerOrder($curlObject)
 {
     $response = curlExec($curlObject);
     $data = json_decode($response, true);
-    return $data;
+    $customerOrderId = $data['id'];
+    return $customerOrderId;
 }
 function setCustomerOrderPosition($curlObject)
 {
