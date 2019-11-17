@@ -2,9 +2,11 @@
 
 error_reporting(E_ALL);
 
-include('moysklad_routine_library.php');
+require_once 'moysklad_routine_library.php';
 
-$rawData = file_get_contents("php://input");
+$handle = fopen('php://input', 'r');
+$rawData = stream_get_contents($handle);
+fclose($handle);
 
 $data = json_decode($rawData, true);
 
@@ -15,23 +17,24 @@ $rawOrganization = $data['organization'];
 $counterpartyIdCollection = array_keys($rawCounterparty);
 $organizationIdCollection = array_keys($rawOrganization);
 
-const FIRST_INDEX = 0;
-$counterpartyId = $counterpartyIdCollection[FIRST_INDEX];
-$organizationId = $organizationIdCollection[FIRST_INDEX];
+$counterpartyId = $counterpartyIdCollection[0];
+$organizationId = $organizationIdCollection[0];
 
 $textAddCustomerOrder = '
 {
   "name": "' . time() . '",
   "organization": {
     "meta": {
-      "href": "https://online.moysklad.ru/api/remap/1.1/entity/organization/' . $organizationId . '",
+      "href": "https://online.moysklad.ru/api/remap/1.1/entity/organization/'
+    . $organizationId . '",
       "type": "organization",
       "mediaType": "application/json"
     }
   },
   "agent": {
     "meta": {
-      "href": "https://online.moysklad.ru/api/remap/1.1/entity/counterparty/' . $counterpartyId . '",
+      "href": "https://online.moysklad.ru/api/remap/1.1/entity/counterparty/'
+    . $counterpartyId . '",
       "type": "counterparty",
       "mediaType": "application/json"
     }
@@ -39,22 +42,15 @@ $textAddCustomerOrder = '
 }
 ';
 
-$apiSettings = getSettings();
-$curl = setupCurl($apiSettings);
-
-$curl = setCurl(
-    $curl,
-    $apiSettings[MOYSKLAD_API_URL] . $apiSettings[MOYSKLAD_ADD_CUSTOMER_ORDER],
-    $apiSettings[MOYSKLAD_ADD_CUSTOMER_ORDER_METHOD]);
+$api = 'https://online.moysklad.ru/api/remap/1.1';
+$curl = getCurl();
+$curl = setCurl($curl, "$api/entity/customerorder", 'POST');
 
 curl_setopt($curl, CURLOPT_POSTFIELDS, $textAddCustomerOrder);
 curl_setopt($curl, CURLOPT_HTTPHEADER, array(
         'Content-Type: application/json',
         'Content-Length: ' . strlen($textAddCustomerOrder))
 );
-
-$customerOrderId = setCustomerOrder($curl);
-// $customerOrderId = $rawCustomerOrder['id'];
 
 $isPositionArray = is_array($rawPosition);
 
@@ -87,15 +83,13 @@ $isContainPosition = count($orderPositions)>0;
 if($isContainPosition ){
     $jsonOrderPositions= json_encode($orderPositions);
 
-    $curl = setupCurl($apiSettings);
+    $customerOrderId = setCustomerOrder($curl);
 
-    $curl = setCurl(
-        $curl,
-        $apiSettings[MOYSKLAD_API_URL]
-        . $apiSettings[MOYSKLAD_ADD_ORDER_POSITION_PREFIX]
-        . $customerOrderId
-        . $apiSettings[MOYSKLAD_ADD_ORDER_POSITION_SUFFIX],
-        $apiSettings[MOYSKLAD_ADD_ORDER_POSITION_METHOD]);
+    $curl = getCurl();
+    $curl = setCurl($curl,
+        "$api/entity/customerorder/"
+        . "$customerOrderId/positions",
+        'POST');
 
     curl_setopt($curl, CURLOPT_POSTFIELDS, $jsonOrderPositions);
     curl_setopt($curl, CURLOPT_HTTPHEADER, array(
@@ -106,5 +100,3 @@ if($isContainPosition ){
     $jsonResponse = setCustomerOrderPosition($curl);
 }
 var_export($jsonResponse);
-
-
